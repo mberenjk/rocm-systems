@@ -50,6 +50,9 @@ set(BITCODE_COMPILE_FLAGS_BASE
     -std=c++17
     -emit-llvm
     -fvisibility=default
+    -fno-sanitize=all
+    -U__SANITIZE_ADDRESS__
+    -Wno-unused-command-line-argument
     -I${CMAKE_CURRENT_SOURCE_DIR}/include/rocshmem
     -I${CMAKE_CURRENT_SOURCE_DIR}/include
     -I${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -149,7 +152,12 @@ foreach(gpu_arch ${BITCODE_GPU_ARCHS})
     add_custom_command(
       OUTPUT ${bc_file}
       COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/bitcode/${gpu_arch}
-      COMMAND ${LLVM_CLANG} ${BITCODE_COMPILE_FLAGS} -c ${src_file} -o ${bc_file}
+      #COMMAND ${LLVM_CLANG} ${BITCODE_COMPILE_FLAGS} -c ${src_file} -o ${bc_file}
+      COMMAND ${CMAKE_COMMAND} -E env
+        --unset=CFLAGS
+        --unset=CXXFLAGS
+        --unset=CPPFLAGS
+        ${LLVM_CLANG} ${BITCODE_COMPILE_FLAGS} -c ${src_file} -o ${bc_file}
       DEPENDS ${src_file}
       COMMENT "Compiling ${src_name} to bitcode for ${gpu_arch}"
       VERBATIM

@@ -56,6 +56,9 @@ if (BUILD_CODE_COVERAGE)
   target_link_options(${PROJECT_NAME} PUBLIC -fprofile-instr-generate)
 endif()
 target_compile_options(${PROJECT_NAME} PUBLIC ${ROCSHMEM_COMPILE_FLAGS})
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  target_compile_options(${PROJECT_NAME} PRIVATE -Xarch_device -fno-sanitize=all)
+endif()
 #target_link_options(
   #${PROJECT_NAME}
   #PUBLIC

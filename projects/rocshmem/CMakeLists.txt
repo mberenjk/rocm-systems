@@ -88,6 +88,18 @@ message(STATUS "rocSHMEM Version: " "${VERSION_STRING}")
 
 project(rocshmem VERSION ${VERSION_STRING} LANGUAGES CXX)
 
+# Sanitizers (ASan, UBSan, etc.) are incompatible with device code.
+# Device code cannot use host sanitizer runtime functions.
+# Add flags to disable sanitizers for device compilation while allowing
+# them for host code.
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  # -Xarch_device passes flags only to device compilation
+  add_compile_options(
+    -Xarch_device -fno-sanitize=all
+    -Xarch_device -U__SANITIZE_ADDRESS__
+  )
+endif()
+
 find_package(ROCmCMakeBuildTools PATHS /opt/rocm)
 include(ROCMCreatePackage)
 include(ROCMInstallTargets)
