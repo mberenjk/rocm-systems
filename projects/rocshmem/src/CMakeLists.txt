@@ -54,6 +54,10 @@ if (BUILD_CODE_COVERAGE)
   set(ROCSHMEM_COMPILE_FLAGS ${ROCSHMEM_COMPILE_FLAGS} -fprofile-instr-generate -fcoverage-mapping)
   target_link_options(${PROJECT_NAME} PUBLIC -fprofile-instr-generate)
 endif()
+if(BUILD_ADDRESS_SANITIZER)
+  target_link_options(rocshmem PRIVATE "SHELL:-Xoffload-linker --lto-O0")
+  target_link_options(rocshmem PRIVATE "SHELL:-Xoffload-linker --lto-CGO0")
+endif()
 target_compile_options(${PROJECT_NAME} PUBLIC ${ROCSHMEM_COMPILE_FLAGS})
 #target_link_options(
   #${PROJECT_NAME}
