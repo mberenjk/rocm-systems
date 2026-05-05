@@ -73,7 +73,7 @@ option(BUILD_DEBUG_DEVICE "Compile in device-side logging (LOGD_WARN/INFO and GD
 option(GDA_IONIC "Build for AMD Pensando IONIC RDMA provider" OFF)
 option(GDA_BNXT "Build for Broadcom RDMA provider" OFF)
 option(GDA_MLX5 "Build for Mellanox MLX5 RDMA provider" OFF)
-option(ASAN "Enable AddressSanitizer" ON)
+option(ASAN "Enable AddressSanitizer" OFF)
 
 if (ASAN)
   execute_process(
@@ -135,24 +135,6 @@ if(AMDSMI_LIBRARY)
   endif()
 else()
   message(STATUS "AMD SMI library not found - disabling pod-based IPC capability detection")
-endif()
-
-#############################################################################
-target_link_options(
-    ${PROJECT_NAME}
-    PUBLIC
-      $<$<BOOL:${ASAN}>:-fsanitize=address -g -shared-libsan>
-  )
-
-  target_compile_options(
-    ${PROJECT_NAME}
-    PUBLIC
-      $<$<BOOL:${ASAN}>:-fsanitize=address -g>
-  )
-
-if (ASAN)
-   message(STATUS "Removing xnack- from GPU_TARGET as these are invalid with ASAN address sanitizer")
-   list(FILTER GPU_TARGETS EXCLUDE REGEX ".*:xnack-$")
 endif()
 
 #############################################################################
@@ -359,6 +341,23 @@ if (NOT BUILD_TESTS_ONLY)
       -fgpu-rdc
       $<$<NOT:$<BOOL:${FILESYSTEM_NO_LINK_NEEDED}>>:stdc++fs>
   )
+
+  target_link_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      $<$<BOOL:${ASAN}>:-fsanitize=address -g -shared-libsan>
+  )
+
+  target_compile_options(
+    ${PROJECT_NAME}
+    PUBLIC
+      $<$<BOOL:${ASAN}>:-fsanitize=address -g>
+  )
+
+if (ASAN)
+   message(STATUS "Removing xnack- from GPU_TARGET as these are invalid with ASAN address sanitizer")
+   list(FILTER GPU_TARGETS EXCLUDE REGEX ".*:xnack-$")
+endif()
 
   if(${ROCM_MAJOR_VERSION} LESS 7)
     # ROCm 6.x requires us to explicitly enable warp sync builtins
